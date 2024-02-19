@@ -17,22 +17,32 @@ def extract_content(html_content):
     soup = BeautifulSoup(html_content, 'html.parser')
     # Find all headers and paragraphs in the HTML content
     headers = soup.find_all(re.compile(r'^h\d$'))  # Matches h1, h2, h3, etc.
-    paragraphs = soup.find_all('p')
     content = []
 
-    # Extract text from headers and paragraphs
-    for header, paragraph in zip(headers, paragraphs):
-        content.append((header.get_text(), paragraph.get_text()))
+    # Extract text from headers and associated paragraphs
+    for header in headers:
+        # Find the parent element that encompasses the header and its associated content
+        parent = header.find_parent()
+        # Extract all paragraphs within the parent element
+        paragraphs = parent.find_all('p')
+        # Combine paragraphs' text into a single string
+        paragraph_text = '\n'.join(paragraph.get_text() for paragraph in paragraphs)
+        # Append the header and paragraph text as a tuple to the content list
+        content.append((header.get_text(), paragraph_text))
 
     return content
 
 if __name__ == "__main__":
-    url = "https://overwatch.fandom.com/wiki/Reaper#articleComments"
+    url = "https://en.wikipedia.org/wiki/Overwatch_(video_game)"
     html_content = fetch_data(url)
     if html_content:
         content = extract_content(html_content)
-        for header, paragraph in content:
-            print(f"{header}\n{paragraph}\n")
+        with open('output.txt', 'w', encoding='utf-8') as f:
+            for header, paragraph in content:
+                f.write(f"{header}\n{paragraph}\n\n")
+        print("Output saved to output.txt")
+
+
 
 
 
