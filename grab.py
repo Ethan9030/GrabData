@@ -32,6 +32,16 @@ def extract_content(html_content):
 
     return content
 
+def extract_image_urls(html_content, base_url):
+    soup = BeautifulSoup(html_content, 'html.parser')
+    # Find all img tags
+    img_tags = soup.find_all('img')
+    # Extract src attribute from each img tag
+    image_urls = [img['src'] for img in img_tags if 'src' in img.attrs]
+    # Convert relative URLs to absolute URLs
+    image_urls = [url if url.startswith('http') else base_url + url for url in image_urls]
+    return image_urls
+
 if __name__ == "__main__":
     url = "https://en.wikipedia.org/wiki/Overwatch_(video_game)"
     html_content = fetch_data(url)
@@ -40,7 +50,15 @@ if __name__ == "__main__":
         with open('output.txt', 'w', encoding='utf-8') as f:
             for header, paragraph in content:
                 f.write(f"{header}\n{paragraph}\n\n")
+
+            # Extract image URLs
+            image_urls = extract_image_urls(html_content, url)
+            f.write("\n\nImage URLs:\n")
+            for image_url in image_urls:
+                f.write(f"{image_url}\n")
+
         print("Output saved to output.txt")
+
 
 
 
